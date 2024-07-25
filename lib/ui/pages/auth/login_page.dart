@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_remix/flutter_remix.dart';
@@ -6,14 +7,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../../../core/exports.dart';
-// import '../../../components/components.dart';
-// import '../../../components/text_fields/custom_textformfield.dart';
 import '../../../riverpod/auth/auth_provider.dart';
 import '../../component/custom_textfield.dart';
-import '../main/main_page.dart';
-import 'signup_page.dart';
-// import '../riverpod/login_provider.dart';
 
+@RoutePage()
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
@@ -92,11 +89,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       notifier.login(
                           username: usernameController.text.trim(),
                           password: passwordController.text.trim(),
-                          goToMain: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const MainPage()),
-                              ));
+                          goToMain: () =>
+                              context.replaceRoute(const MainRoute()));
                     },
                     child: Text(
                       "Login",
@@ -128,11 +122,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SignUpPage()),
-                          );
+                          context.pushRoute(const SignUpRoute());
                         },
                         child: Text(
                           "Sign Up",

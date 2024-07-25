@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_remix/flutter_remix.dart';
@@ -7,9 +8,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/exports.dart';
 import '../../../riverpod/auth/auth_provider.dart';
 import '../../component/custom_textfield.dart';
-import 'login_page.dart';
-// import '../riverpod/login_provider.dart';
 
+@RoutePage()
 class SignUpPage extends ConsumerStatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
 
@@ -77,7 +77,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               CustomTextFieldWidget(
                 label: "Enter Password",
                 controller: passwordController,
-                isObscureText: state.showPassword,
+                isObscureText: !state.showPassword,
                 suffixIcon: IconButton(
                   splashRadius: 25.r,
                   icon: Icon(
@@ -96,18 +96,18 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               CustomTextFieldWidget(
                 label: "Enter Confirm Password",
                 controller: confirmPasswordController,
-                isObscureText: state.showConfirmPassword,
+                isObscureText: !state.showConfirmPassword,
                 suffixIcon: IconButton(
                   splashRadius: 25.r,
                   icon: Icon(
-                    state.showPassword
+                    state.showConfirmPassword
                         ? FlutterRemix.eye_line
                         : FlutterRemix.eye_close_line,
                     color: AppColors.black,
                     size: 20.r,
                   ),
                   onPressed: () =>
-                      notifier.setShowPassword(!state.showPassword),
+                      notifier.setShowCPassword(!state.showPassword),
                 ),
                 errorText: state.confirmPasswordError,
               ),
@@ -127,11 +127,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       email: emailController.text.trim(),
                       password: passwordController.text.trim(),
                       confirmPassword: confirmPasswordController.text.trim(),
-                      goToLogin: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginPage()),
-                      ),
+                      goToLogin: () => context.replaceRoute(const LoginRoute()),
                     ),
                     child: Text(
                       "Continue",

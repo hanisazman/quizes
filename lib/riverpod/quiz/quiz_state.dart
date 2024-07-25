@@ -10,13 +10,16 @@ class QuizState with _$QuizState {
   const factory QuizState({
     @Default(false) bool isLoading,
     @Default(false) bool isError,
+    @Default(false) bool showQuestions,
     @Default('') String errorMsg,
     @Default([]) List<QuizModel> quizList,
     @Default([]) List<QuizModel> selectedQuizList,
     @Default(null) CategoryModel? selectedCategory,
-    @Default(0) int selectedOptionIndex,
     @Default(null) QuizModel? currentQuestion,
     @Default(0) int currentQuestionIndex,
+    @Default('') String selectedOption,
+    @Default({}) Map<int, String?> selectedAnswers,
+    @Default(0) int score,
   }) = _QuizState;
 
   const QuizState._();

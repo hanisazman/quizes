@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../core/exports.dart';
 
 class AppDrawer extends StatefulWidget {
-  const AppDrawer({Key? key, this.onLogout}) : super(key: key);
-  final Function()? onLogout;
+  const AppDrawer({Key? key, this.onLogout, this.onScoreHistory}) : super(key: key);
+  final Function()? onLogout, onScoreHistory;
 
   @override
   State<AppDrawer> createState() => _AppDrawerState();
@@ -46,12 +46,12 @@ class _AppDrawerState extends State<AppDrawer> {
           ListTile(
             leading: const Icon(Icons.score, color: AppColors.white),
             title: const Text(
-              "My Scores",
+              "Score History",
               style: TextStyle(
                 color: AppColors.white,
               ),
             ),
-            onTap: () {},
+            onTap: widget.onScoreHistory,
           ),
           ListTile(
             leading: const Icon(Icons.exit_to_app, color: AppColors.white),

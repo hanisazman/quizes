@@ -20,81 +20,88 @@ class QuizNotifier extends StateNotifier<QuizState> {
       : _quizBox = Hive.box<QuizModel>('quizBox'),
         super(const QuizState());
 
-  setSelectedCategory(
-      {required CategoryModel category,
-      required List<QuizModel> selectedQuiz}) {
-    state = state.copyWith(
-        selectedCategory: category, selectedQuizList: selectedQuiz);
-    logger.i(state.selectedQuizList);
+  void selectShowQuestion(bool value) {
+    state = state.copyWith(showQuestions: value);
   }
 
-  void selectOption(int index) {
-    state = state.copyWith(selectedOptionIndex: index);
+  void setSelectedCategory(CategoryModel category) {
+    state = state.copyWith(selectedCategory: category);
+  }
+
+  setInitialAnswers() {
+    state = state.copyWith(selectedAnswers: {
+      for (var index in Iterable<int>.generate(state.quizList.length))
+        index: null
+    });
+    logger.i(state.selectedAnswers);
+  }
+
+  void selectOption(String option) {
+    final currentIndex = state.currentQuestionIndex;
+
+    final updatedSelectedAnswers =
+        Map<int, String?>.from(state.selectedAnswers);
+    updatedSelectedAnswers[currentIndex] = option;
+
+    state = state.copyWith(
+      selectedOption: option,
+      selectedAnswers: updatedSelectedAnswers,
+    );
   }
 
   void nextQuestion() {
-    final currentIndex =
-        state.selectedQuizList.indexWhere((q) => q == state.currentQuestion);
-    if (currentIndex < state.selectedQuizList.length - 1) {
-      final nextQuestion = state.selectedQuizList[currentIndex + 1];
+    final currentIndex = state.currentQuestionIndex;
+    if (currentIndex < state.quizList.length - 1) {
+      final nextQuestion = state.quizList[currentIndex + 1];
       state = state.copyWith(
         currentQuestion: nextQuestion,
         currentQuestionIndex: currentIndex + 1,
+        selectedOption: '', // Clear selected option for next question
       );
-    } else {
-      // Handle end of quiz
     }
+  }
+
+  void calculateScore() {
+    int score = 0;
+    for (int i = 0; i < state.quizList.length; i++) {
+      final selectedAnswer = state.selectedAnswers[i];
+      if (selectedAnswer != null && selectedAnswer.isNotEmpty) {
+        final currentQuestion = state.quizList[i];
+        final correctAnswer = currentQuestion.correctAnswer;
+        if (correctAnswer == selectedAnswer) {
+          score++;
+        }
+      }
+    }
+    state = state.copyWith(score: score);
+    // logger.i("score: $score");
   }
 
   Future<void> fetchQuiz({bool? isRefresh}) async {
-  if (!mounted) return;
-
-  state = state.copyWith(isLoading: true);
-
-  try {
-    List<QuizModel> combinedQuizList = [];
-
-    for (var category in categories) {
-      final key = 'category_${category.id}';
-      List<QuizModel> categoryQuizList = [];
-
-      if (_quizBox.get(key) == null || isRefresh == true) {
-        final response = await _quizRepository.getQuizes(category.id);
-
-        // Handle the API response
-        await response.when(
-          success: (data) async {
-            logger.d('Fetched data: $data');
-            await hiveService.putAllWithCategoryKey(
-              key,
-              data,
-              _quizBox,
-            );
-            categoryQuizList = data; // Update with fetched data
+    try {
+      state = state.copyWith(isLoading: true);
+      if (_quizBox.isEmpty ||
+          !_quizBox.values
+              .any((q) => q.category == state.selectedCategory?.name)) {
+        final response =
+            await _quizRepository.getQuizes(state.selectedCategory?.id ?? 0);
+        response.when(
+          success: (data) {
+            setInitialAnswers();
+            state = state.copyWith(isLoading: false, quizList: data);
           },
           failure: (failure) {
-            logger.e('API call failure: $failure');
-            state = state.copyWith(isLoading: false);
-            return; // Exit the loop on failure
+            logger.e(failure);
           },
         );
+        hiveService.assignAll(list: state.quizList, box: _quizBox);
       } else {
-        categoryQuizList = (_quizBox.get(key) as List).cast<QuizModel>();
-        logger.d('Loaded data from Hive: $categoryQuizList');
+        setInitialAnswers();
+        state = state.copyWith(
+            isLoading: false, quizList: _quizBox.values.toList());
       }
-
-      combinedQuizList.addAll(categoryQuizList); // Combine quiz lists
-    }
-
-    state = state.copyWith(isLoading: false, quizList: combinedQuizList); // Update state
-  } catch (e) {
-    state = state.copyWith(isLoading: false);
-    logger.e('An unexpected error occurred: $e');
-  } finally {
-    if (mounted) {
-      logger.d('Final quiz list: ${state.quizList}');
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
     }
   }
-}
-
 }

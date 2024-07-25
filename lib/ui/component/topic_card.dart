@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:google_fonts/google_fonts.dart';
 import '../../../core/exports.dart';
 
 class TopicCard extends StatelessWidget {

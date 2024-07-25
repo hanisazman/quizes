@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,11 +6,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/exports.dart';
 import '../../../riverpod/auth/auth_provider.dart';
 import '../../../riverpod/quiz/quiz_provider.dart';
+import '../../../riverpod/score/score_provider.dart';
+import '../../component/drawer.dart';
 import '../../component/topic_card.dart';
-import '../quiz/question_page.dart';
-import '../root.dart';
+import '../quiz/questions_page.dart';
 import '../../../models/category_model.dart';
+import '../score/score_page.dart';
 
+@RoutePage()
 class MainPage extends ConsumerStatefulWidget {
   const MainPage({super.key});
 
@@ -18,72 +22,118 @@ class MainPage extends ConsumerStatefulWidget {
 }
 
 class _MainPageState extends ConsumerState<MainPage> {
+  String name = '';
+
+  void getLocalStorage() {
+    setState(() {
+      name = LocalStorage.instance.getName();
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    final notifier = ref.read(authProvider.notifier);
-    final quizNotifier = ref.read(quizProvider.notifier);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifier.setUsernames();
-      quizNotifier.fetchQuiz();
-    });
+    getLocalStorage();
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, _) {
-      final state = ref.watch(authProvider);
-      final quizState = ref.watch(quizProvider);
       final quizNotifier = ref.read(quizProvider.notifier);
-      return RootApp(
-          body: SingleChildScrollView(
-        child: Column(children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height / 6,
-            width: MediaQuery.of(context).size.width,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Hi, ${state.name.toUpperCase()}!',
-                    style: GoogleFonts.bayon(
-                        color: AppColors.white, fontSize: 30.sp)),
-                10.verticalSpace,
-                Text('What would like to improve today?',
-                    style: GoogleFonts.inter(
-                        color: AppColors.white, fontSize: 16.sp))
-              ],
-            ),
-          ),
-          15.verticalSpace,
-          ListView.builder(
-            scrollDirection: Axis.vertical,
-            itemCount: categories.length,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              return TopicCard(
-                title: category.name,
-                subtitle: "5 Questions | 3 Minutes",
-                buttonText: 'Continue',
-                imagePath: category.image,
-                onPressed: () {
-                  quizNotifier.setSelectedCategory(
-                    category: category,
-                    selectedQuiz: quizState.quizList
-                        .where((q) => q.category == category.name)
-                        .toList(),
-                  );
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const QuestionPage()),
-                  );
-                },
-              );
-            },
-          ),
-        ]),
-      ));
+      final quizState = ref.watch(quizProvider);
+      final scoreState = ref.watch(scoreProvider);
+      final notifier = ref.read(authProvider.notifier);
+      final scoreNotifier = ref.read(scoreProvider.notifier);
+      return quizState.showQuestions
+          ? const QuestionsPage()
+          : scoreState.showScoreHistory
+              ? const ScoreHistoryPage()
+              : Scaffold(
+                  backgroundColor: const Color(0xffFBFAFF),
+                  drawer: AppDrawer(
+                    onScoreHistory: () =>
+                        scoreNotifier.setShowScoreHistory(true),
+                    onLogout: () => notifier.logout(
+                      goToLogin: () => context.replaceRoute(const LoginRoute()),
+                    ),
+                  ),
+                  appBar: AppBar(
+                    backgroundColor: AppColors.primaryColor,
+                    elevation:
+                        0, 
+                    leading: Builder(
+                      builder: (context) {
+                        return IconButton(
+                          icon: const Icon(Icons.menu, color: AppColors.white),
+                          onPressed: () => Scaffold.of(context).openDrawer(),
+                        );
+                      },
+                    ),
+                  ),
+                  body: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        height: MediaQuery.of(context).size.height / 6,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryColor,
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(30.0),
+                            bottomRight: Radius.circular(30.0),
+                          ),
+                        ),
+                      ),
+                      SingleChildScrollView(
+                        child: Column(children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height / 6,
+                            width: MediaQuery.of(context).size.width,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('Hi, ${name.toUpperCase()}!',
+                                    style: GoogleFonts.bayon(
+                                        color: AppColors.white,
+                                        fontSize: 30.sp)),
+                                10.verticalSpace,
+                                Text('What would like to improve today?',
+                                    style: GoogleFonts.inter(
+                                        color: AppColors.white,
+                                        fontSize: 16.sp))
+                              ],
+                            ),
+                          ),
+                          15.verticalSpace,
+                          ListView.builder(
+                            scrollDirection: Axis.vertical,
+                            itemCount: categories.length,
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              final category = categories[index];
+                              return TopicCard(
+                                title: category.name,
+                                subtitle: "5 Questions | 3 Minutes",
+                                buttonText: 'Continue',
+                                imagePath: category.image,
+                                onPressed: () {
+                                  quizNotifier.setSelectedCategory(category);
+                                  quizNotifier.selectShowQuestion(true);
+                                },
+                              );
+                            },
+                          ),
+                        ]),
+                      )
+                    ],
+                  ),
+                );
     });
   }
 }

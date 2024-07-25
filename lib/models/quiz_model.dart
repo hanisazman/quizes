@@ -54,6 +54,6 @@ class QuizModel extends HiveObject {
 
   @override
   String toString() {
-    return 'QuizModel(category: $category, question: $question)';
+    return 'QuizModel(category: $category, question: $question, correctAnswer: $correctAnswer, incorrectAnswers: $incorrectAnswers)';
   }
 }

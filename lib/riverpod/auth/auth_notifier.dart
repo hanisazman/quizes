@@ -26,6 +26,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(showPassword: show);
   }
 
+  void setShowCPassword(bool show) {
+    state = state.copyWith(showConfirmPassword: show);
+  }
+
   setUsernames() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -111,21 +115,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       return;
     } else {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('username', user.username);
-      await prefs.setString('name', user.name);
-      await prefs.setString('email', user.email);
-      await prefs.setBool('isLoggedIn', true);
-
-      final username = prefs.getString('username') ?? '';
-      final name = prefs.getString('name') ?? '';
+      LocalStorage.instance.setName(user.name);
+      LocalStorage.instance.setUserName(user.username);
+      LocalStorage.instance.setEmail(user.email);
+      LocalStorage.instance.setIsLogged(true);
 
       state = state.copyWith(
         isLoading: false,
         isLoginError: false,
         isLoggedIn: true,
         username: username,
-        name: name,
+        name: user.name,
       );
       goToMain?.call();
     }
@@ -136,8 +136,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     goToLogin?.call();
 
     // clear SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    LocalStorage.instance.clearStore();
 
     // Clear Hive boxes
     await _clearHiveBoxes();
@@ -145,6 +144,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     // Delete cache and application directories
     await _deleteCacheDir();
     await _deleteAppDir();
+    if (!mounted) return;
     state = const AuthState();
   }
 
@@ -156,8 +156,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final hiveService = HiveService();
 
     await hiveService.clearBox(box: Hive.box<QuizModel>('quizBox'));
-    // await hiveService.clearBox(box: Hive.box<CategoryModel>('categoryBox'));
-    // await hiveService.clearBox(box: Hive.box<ItemModel>('itemBox'));
   }
 
   Future<void> _deleteCacheDir() async {
@@ -201,29 +199,4 @@ class AuthNotifier extends StateNotifier<AuthState> {
       logger.e('Error while deleting application directory: $e');
     }
   }
-
-  // Future<void> _deleteCacheDir() async {
-  //   final cacheDir = await getTemporaryDirectory();
-  //   if (cacheDir.existsSync()) {
-  //     // cacheDir.deleteSync(recursive: true);
-  //     for (var file in cacheDir.listSync()) {
-  //       try {
-  //         if (file is File) {
-  //           file.deleteSync();
-  //         } else if (file is Directory) {
-  //           file.deleteSync(recursive: true);
-  //         }
-  //       } catch (e) {
-  //         print('Failed to delete ${file.path}: $e');
-  //       }
-  //     }
-  //   }
-  // }
-
-  // Future<void> _deleteAppDir() async {
-  //   final appDir = await getApplicationSupportDirectory();
-  //   if (appDir.existsSync()) {
-  //     appDir.deleteSync(recursive: true);
-  //   }
-  // }
 }
