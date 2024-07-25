@@ -8,7 +8,6 @@ class AuthGuard extends AutoRouteGuard {
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) {
     final bool isLoggedIn = LocalStorage.instance.getIsLoggedIn();
-
     // the navigation is paused until resolver.next() is called with either
     // true to resume/continue navigation or false to abort navigation
     if (isLoggedIn) {

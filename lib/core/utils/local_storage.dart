@@ -65,7 +65,7 @@ class LocalStorage {
     }
   }
 
-  bool getIsLoggedIn() => _preferences?.getBool("isLoggedIn") ?? true;
+  bool getIsLoggedIn() => _preferences?.getBool("isLoggedIn") ?? false;
   void deleteIsLoggedIn() => _preferences?.remove("isLoggedIn");
 
   void clearStore() {
