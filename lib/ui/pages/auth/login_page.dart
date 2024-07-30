@@ -9,6 +9,7 @@ import 'package:lottie/lottie.dart';
 import '../../../../../core/exports.dart';
 import '../../../riverpod/auth/auth_provider.dart';
 import '../../component/custom_textfield.dart';
+import '../../component/error_alert_dialog.dart';
 
 @RoutePage()
 class LoginPage extends ConsumerStatefulWidget {
@@ -27,40 +28,38 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final notifier = ref.read(authProvider.notifier);
     final state = ref.watch(authProvider);
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: AppColors.primaryColor,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              const Spacer(
-                flex: 5,
-              ),
-              Expanded(
-                flex: 50,
-                child: Lottie.asset("assets/lottie/quiz_animation.json"),
-              ),
-              Expanded(
-                flex: 15,
-                child: Text(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 50),
+                Lottie.asset(
+                  "assets/lottie/quiz_animation.json",
+                  height: 250.h,
+                ),
+                Text(
                   "QUIZES",
                   style: GoogleFonts.bayon(
-                      color: AppColors.secondaryColor, fontSize: 48),
+                    color: AppColors.secondaryColor,
+                    fontSize: 48,
+                  ),
                 ),
-              ),
-              const Spacer(
-                flex: 10,
-              ),
-              CustomTextFieldWidget(
-                  label: "Enter Username", controller: usernameController),
-              const Spacer(
-                flex: 5,
-              ),
-              CustomTextFieldWidget(
+                const SizedBox(height: 20),
+                CustomTextFieldWidget(
+                  label: "Enter Username",
+                  controller: usernameController,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 20),
+                CustomTextFieldWidget(
                   label: "Enter Password",
                   controller: passwordController,
                   isObscureText: !state.showPassword,
+                  textInputAction: TextInputAction.done,
                   suffixIcon: IconButton(
                     splashRadius: 25.r,
                     icon: Icon(
@@ -72,74 +71,75 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     onPressed: () =>
                         notifier.setShowPassword(!state.showPassword),
-                  )),
-              const Spacer(
-                flex: 5,
-              ),
-              Flexible(
-                flex: 10,
-                child: Container(
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
                   height: 60,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: AppColors.secondaryColor),
+                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.secondaryColor,
+                  ),
                   child: MaterialButton(
                     onPressed: () async {
                       notifier.login(
-                          username: usernameController.text.trim(),
-                          password: passwordController.text.trim(),
-                          goToMain: () =>
-                              context.replaceRoute(const MainRoute()));
+                        username: usernameController.text.trim(),
+                        password: passwordController.text.trim(),
+                        onFail: () => showDialog(
+                            context: context,
+                            builder: (ctx) =>
+                                Consumer(builder: (context, ref, _) {
+                                  final state = ref.watch(authProvider);
+                                  return ErrorAlertDialogWidget(
+                                      errorMsg: state.loginError);
+                                })),
+                        goToMain: () => context.replaceRoute(const MainRoute()),
+                      );
                     },
                     child: Text(
                       "Login",
                       style: GoogleFonts.inter(
-                          fontSize: 20.sp, color: AppColors.primaryColor),
+                        fontSize: 20.sp,
+                        color: AppColors.primaryColor,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const Spacer(
-                flex: 5,
-              ),
-              const Divider(
-                height: 30,
-                thickness: 1,
-                color: AppColors.secondaryColor,
-              ),
-              Flexible(
-                flex: 10,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Don't have account?",
-                        style: GoogleFonts.inter(
-                            color: Colors.white, fontSize: 18.sp),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          context.pushRoute(const SignUpRoute());
-                        },
-                        child: Text(
-                          "Sign Up",
-                          style: GoogleFonts.inter(
-                              color: AppColors.thirdColor,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    ],
-                  ),
+                const SizedBox(height: 20),
+                const Divider(
+                  height: 30,
+                  thickness: 1,
+                  color: AppColors.secondaryColor,
                 ),
-              ),
-              const Spacer(
-                flex: 5,
-              ),
-            ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account?",
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        context.pushRoute(const SignUpRoute());
+                      },
+                      child: Text(
+                        "Sign Up",
+                        style: GoogleFonts.inter(
+                          color: AppColors.thirdColor,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

@@ -56,28 +56,32 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                   ),
                 ],
               ),
-              10.verticalSpace,
+              SizedBox(height: 10.h),
               CustomTextFieldWidget(
                 label: "Enter Username",
                 controller: usernameController,
                 errorText: state.signupError,
+                textInputAction: TextInputAction.next,
               ),
-              10.verticalSpace,
+              SizedBox(height: 10.h),
               CustomTextFieldWidget(
                 label: "Enter Name",
                 controller: nameController,
+                textInputAction: TextInputAction.next,
               ),
-              10.verticalSpace,
+              SizedBox(height: 10.h),
               CustomTextFieldWidget(
                 label: "Enter Email",
                 controller: emailController,
                 errorText: state.emailError,
+                textInputAction: TextInputAction.next,
               ),
-              10.verticalSpace,
+              SizedBox(height: 10.h),
               CustomTextFieldWidget(
                 label: "Enter Password",
                 controller: passwordController,
                 isObscureText: !state.showPassword,
+                textInputAction: TextInputAction.next,
                 suffixIcon: IconButton(
                   splashRadius: 25.r,
                   icon: Icon(
@@ -92,11 +96,12 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                 ),
                 errorText: state.password,
               ),
-              10.verticalSpace,
+              SizedBox(height: 10.h),
               CustomTextFieldWidget(
                 label: "Enter Confirm Password",
                 controller: confirmPasswordController,
                 isObscureText: !state.showConfirmPassword,
+                textInputAction: TextInputAction.done,
                 suffixIcon: IconButton(
                   splashRadius: 25.r,
                   icon: Icon(
@@ -111,31 +116,28 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                 ),
                 errorText: state.confirmPasswordError,
               ),
-              20.verticalSpace,
-              Flexible(
-                flex: 10,
-                child: Container(
-                  height: 60,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: AppColors.thirdColor),
-                  child: MaterialButton(
-                    onPressed: () => notifier.signup(
-                      username: usernameController.text.trim(),
-                      name: nameController.text.trim(),
-                      email: emailController.text.trim(),
-                      password: passwordController.text.trim(),
-                      confirmPassword: confirmPasswordController.text.trim(),
-                      goToLogin: () => context.replaceRoute(const LoginRoute()),
-                    ),
-                    child: Text(
-                      "Continue",
-                      style: GoogleFonts.inter(
-                          fontSize: 20.sp,
-                          color: AppColors.black,
-                          fontWeight: FontWeight.w500),
-                    ),
+              SizedBox(height: 20.h),
+              Container(
+                height: 60,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.thirdColor),
+                child: MaterialButton(
+                  onPressed: () => notifier.signup(
+                    username: usernameController.text.trim(),
+                    name: nameController.text.trim(),
+                    email: emailController.text.trim(),
+                    password: passwordController.text.trim(),
+                    confirmPassword: confirmPasswordController.text.trim(),
+                    goToLogin: () => context.replaceRoute(const LoginRoute()),
+                  ),
+                  child: Text(
+                    "Continue",
+                    style: GoogleFonts.inter(
+                        fontSize: 20.sp,
+                        color: AppColors.black,
+                        fontWeight: FontWeight.w500),
                   ),
                 ),
               ),

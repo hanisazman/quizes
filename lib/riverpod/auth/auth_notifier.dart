@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/exports.dart';
 
@@ -28,21 +27,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void setShowCPassword(bool show) {
     state = state.copyWith(showConfirmPassword: show);
-  }
-
-  setUsernames() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final username = prefs.getString('username') ?? '';
-    final name = prefs.getString('name') ?? '';
-
-    state = state.copyWith(
-      isLoading: false,
-      isLoginError: false,
-      isLoggedIn: true,
-      username: username,
-      name: name,
-    );
   }
 
   void signup({
@@ -100,34 +84,47 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> login({
     required String username,
     required String password,
+    required VoidCallback onFail,
     VoidCallback? goToMain,
   }) async {
     state = state.copyWith(isLoading: true);
 
-    final user =
-        _userBox.values.firstWhere((user) => user.username == username);
+    try {
+      final user = _userBox.values.firstWhere(
+        (user) => user.username == username,
+        orElse: () => throw Exception('User not found!'),
+      );
 
-    if (user.password != password) {
+      if (user.password != password) {
+        state = state.copyWith(
+          isLoading: false,
+          isLoginError: true,
+          loginError: 'Invalid password!',
+        );
+        onFail();
+        return;
+      } else {
+        LocalStorage.instance.setName(user.name);
+        LocalStorage.instance.setUserName(user.username);
+        LocalStorage.instance.setEmail(user.email);
+        LocalStorage.instance.setIsLogged(true);
+
+        state = state.copyWith(
+          isLoading: false,
+          isLoginError: false,
+          isLoggedIn: true,
+          username: username,
+          name: user.name,
+        );
+        goToMain?.call();
+      }
+    } catch (e) {
       state = state.copyWith(
         isLoading: false,
         isLoginError: true,
-        loginError: 'Invalid username or password',
+        loginError: e.toString(),
       );
-      return;
-    } else {
-      LocalStorage.instance.setName(user.name);
-      LocalStorage.instance.setUserName(user.username);
-      LocalStorage.instance.setEmail(user.email);
-      LocalStorage.instance.setIsLogged(true);
-
-      state = state.copyWith(
-        isLoading: false,
-        isLoginError: false,
-        isLoggedIn: true,
-        username: username,
-        name: user.name,
-      );
-      goToMain?.call();
+      onFail();
     }
   }
 

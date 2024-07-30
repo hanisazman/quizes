@@ -66,8 +66,7 @@ class _MainPageState extends ConsumerState<MainPage> {
                   ),
                   appBar: AppBar(
                     backgroundColor: AppColors.primaryColor,
-                    elevation:
-                        0, 
+                    elevation: 0,
                     leading: Builder(
                       builder: (context) {
                         return IconButton(
@@ -90,47 +89,49 @@ class _MainPageState extends ConsumerState<MainPage> {
                           ),
                         ),
                       ),
-                      SingleChildScrollView(
-                        child: Column(children: [
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height / 6,
-                            width: MediaQuery.of(context).size.width,
+                      Column(children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height / 6,
+                          width: MediaQuery.of(context).size.width,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Hi, ${name.toUpperCase()}!',
+                                  style: GoogleFonts.bayon(
+                                      color: AppColors.white, fontSize: 30.sp)),
+                              10.verticalSpace,
+                              Text('What would like to improve today?',
+                                  style: GoogleFonts.inter(
+                                      color: AppColors.white, fontSize: 16.sp))
+                            ],
+                          ),
+                        ),
+                        15.verticalSpace,
+                        Expanded(
+                          child: SingleChildScrollView(
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text('Hi, ${name.toUpperCase()}!',
-                                    style: GoogleFonts.bayon(
-                                        color: AppColors.white,
-                                        fontSize: 30.sp)),
-                                10.verticalSpace,
-                                Text('What would like to improve today?',
-                                    style: GoogleFonts.inter(
-                                        color: AppColors.white,
-                                        fontSize: 16.sp))
+                                15.verticalSpace,
+                                // Create a list of TopicCard widgets
+                                ...categories
+                                    .map((category) => TopicCard(
+                                          title: category.name,
+                                          subtitle: "5 Questions | 3 Minutes",
+                                          buttonText: 'Continue',
+                                          imagePath: category.image,
+                                          onPressed: () {
+                                            quizNotifier
+                                                .setSelectedCategory(category);
+                                            quizNotifier
+                                                .selectShowQuestion(true);
+                                          },
+                                        ))
+                                    .toList(),
                               ],
                             ),
                           ),
-                          15.verticalSpace,
-                          ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            itemCount: categories.length,
-                            shrinkWrap: true,
-                            itemBuilder: (context, index) {
-                              final category = categories[index];
-                              return TopicCard(
-                                title: category.name,
-                                subtitle: "5 Questions | 3 Minutes",
-                                buttonText: 'Continue',
-                                imagePath: category.image,
-                                onPressed: () {
-                                  quizNotifier.setSelectedCategory(category);
-                                  quizNotifier.selectShowQuestion(true);
-                                },
-                              );
-                            },
-                          ),
-                        ]),
-                      )
+                        ),
+                      ])
                     ],
                   ),
                 );

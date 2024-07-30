@@ -14,6 +14,7 @@ class CustomTextFieldWidget extends StatelessWidget {
     this.suffixIcon,
     this.isObscureText = false,
     this.errorText,
+    this.textInputAction,
   });
 
   final FocusNode? focusNode;
@@ -22,6 +23,7 @@ class CustomTextFieldWidget extends StatelessWidget {
   final Widget? prefixIcon, suffixIcon;
   final bool? isObscureText;
   final String? errorText;
+  final TextInputAction? textInputAction;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +38,7 @@ class CustomTextFieldWidget extends StatelessWidget {
             keyboardType: TextInputType.visiblePassword,
             obscureText: isObscureText!,
             obscuringCharacter: '*',
+          textInputAction: textInputAction,
             style: GoogleFonts.inter(
               fontWeight: FontWeight.w500,
               fontSize: 18.sp,
